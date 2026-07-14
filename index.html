@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Appro — One store. Every pulse of what's next.</title>
+<meta name="description" content="Appro is a modern, ad-free app and game store — curated listings, honest ratings, instant installs, fully offline-capable." />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0B0E14" />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#F5F6FA" />
+<meta name="color-scheme" content="dark light" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="icon" href="./icons/icon-192.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="./icons/icon-192.svg" />
+
+<!-- Open Graph -->
+<meta property="og:title" content="Appro — One store. Every pulse of what's next." />
+<meta property="og:description" content="A curated, ad-free app and game store with 100+ titles, built fully client-side." />
+<meta property="og:type" content="website" />
+
+<link rel="stylesheet" href="./css/styles.css" />
+<script>
+  // Set the theme attribute synchronously, before first paint, so the page
+  // never flashes the wrong theme while app.js is still loading.
+  (function () {
+    try {
+      var isLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+      document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
+    } catch (e) { /* default CSS variables are already dark-mode */ }
+  })();
+</script>
+</head>
+<body>
+<a href="#view-root" class="skip-link">Skip to content</a>
+<div class="ambient" aria-hidden="true"></div>
+<div id="offlineBanner" class="offline-banner" role="status">⚡ You're offline — Appro keeps working from your last visit.</div>
+
+<div class="app-shell">
+  <div class="main-col">
+    <header class="topnav">
+      <a href="#/" class="brand" aria-label="Appro home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name" data-i18n="brand">Appro</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#/" class="js-nav-link" data-route="" data-i18n="home">Home</a>
+        <a href="#/apps" class="js-nav-link" data-route="/apps" data-i18n="apps">Apps</a>
+        <a href="#/games" class="js-nav-link" data-route="/games" data-i18n="games">Games</a>
+        <a href="#/categories" class="js-nav-link" data-route="/categories" data-i18n="categories">Categories</a>
+        <a href="#/trending" class="js-nav-link" data-route="/trending" data-i18n="trending">Trending</a>
+        <a href="#/top-charts" class="js-nav-link" data-route="/top-charts" data-i18n="charts">Top Charts</a>
+      </nav>
+
+      <div class="nav-search" role="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <label for="navSearchInput" class="visually-hidden" data-i18n="search">Search</label>
+        <input id="navSearchInput" type="text" placeholder="Search apps, games, developers…" autocomplete="off" />
+      </div>
+
+      <div class="nav-actions">
+        <button class="icon-btn" id="favNavBtn" aria-label="Favorites">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.5-4.6-10-9.3C.4 8 2.3 4 6.3 4c2.1 0 3.8 1.2 4.7 3 .9-1.8 2.6-3 4.7-3 4 0 5.9 4 4.3 7.7C19.5 16.4 12 21 12 21Z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="view-root" class="view-container" role="main" tabindex="-1"></main>
+
+    <footer class="footer">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>Discover</h4>
+          <a href="#/apps">Apps</a>
+          <a href="#/games">Games</a>
+          <a href="#/categories">Categories</a>
+          <a href="#/trending">Trending</a>
+          <a href="#/top-charts">Top Charts</a>
+          <a href="#/new-releases">New Releases</a>
+        </div>
+        <div class="footer-col">
+          <h4>Your Appro</h4>
+          <a href="#/favorites">Favorites</a>
+          <a href="#/recent">Recently Viewed</a>
+          <a href="#/download-center">Download Center</a>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <a href="#/about">About</a>
+          <a href="#/contact">Contact</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="#/privacy">Privacy Policy</a>
+          <a href="#/terms">Terms of Service</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Appro. All rights reserved.</span>
+        <span>Built fully client-side — no server, no tracking.</span>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<nav class="bottomnav" aria-label="Primary mobile">
+  <a href="#/" class="js-bottom-link" data-route="">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+    <span data-i18n="home">Home</span>
+  </a>
+  <a href="#/apps" class="js-bottom-link" data-route="/apps">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    <span data-i18n="apps">Apps</span>
+  </a>
+  <a href="#/games" class="js-bottom-link" data-route="/games">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="12" rx="4"/><path d="M7 11v4M5 13h4M15.5 12.5h.01M18 14.5h.01"/></svg>
+    <span data-i18n="games">Games</span>
+  </a>
+  <a href="#/trending" class="js-bottom-link" data-route="/trending">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17 9 11l4 4 8-8"/><path d="M17 7h4v4"/></svg>
+    <span data-i18n="trending">Trending</span>
+  </a>
+  <a href="#/favorites" class="js-bottom-link" data-route="/favorites">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.5-4.6-10-9.3C.4 8 2.3 4 6.3 4c2.1 0 3.8 1.2 4.7 3 .9-1.8 2.6-3 4.7-3 4 0 5.9 4 4.3 7.7C19.5 16.4 12 21 12 21Z"/></svg>
+    <span>Saved</span>
+  </a>
+</nav>
+
+<div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+<script src="./js/data.js"></script>
+<script src="./js/app.js"></script>
+</body>
+</html>

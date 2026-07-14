@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Appro">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#12161F"/>
+      <stop offset="1" stop-color="#0B0E14"/>
+    </linearGradient>
+    <linearGradient id="coreGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4CE0D2"/>
+      <stop offset="0.55" stop-color="#8C6FE0"/>
+      <stop offset="1" stop-color="#FF4FA3"/>
+    </linearGradient>
+    <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4CE0D2"/>
+      <stop offset="1" stop-color="#FF4FA3"/>
+    </linearGradient>
+    <radialGradient id="glowCyan" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#4CE0D2" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#4CE0D2" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowMagenta" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FF4FA3" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#FF4FA3" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glassHighlight" cx="0.32" cy="0.28" r="0.55">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="30"/>
+    </filter>
+    <filter id="coreShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Full-bleed square background (required for adaptive/maskable icons — no rounded corners baked in) -->
+  <rect width="512" height="512" fill="url(#bgGrad)"/>
+
+  <!-- Ambient glow, kept inside the safe zone -->
+  <circle cx="256" cy="256" r="190" fill="url(#glowCyan)" filter="url(#softBlur)" opacity="0.6"/>
+  <circle cx="256" cy="256" r="150" fill="url(#glowMagenta)" filter="url(#softBlur)" opacity="0.4"/>
+
+  <!-- All emblem content scaled to sit within the ~80% maskable safe zone -->
+  <circle cx="256" cy="256" r="150" fill="none" stroke="url(#ringGrad)" stroke-width="2.5" opacity="0.26"/>
+  <circle cx="256" cy="256" r="128" fill="none" stroke="url(#ringGrad)" stroke-width="2.5" opacity="0.38"/>
+
+  <circle cx="256" cy="256" r="96" fill="url(#coreGrad)" filter="url(#coreShadow)"/>
+  <circle cx="256" cy="256" r="96" fill="url(#glassHighlight)"/>
+
+  <path d="M172 256 H212 L231 208 L261 312 L282 256 H340"
+        fill="none" stroke="#0B0E14" stroke-width="14"
+        stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>
+</svg>
