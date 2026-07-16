@@ -1,8 +1,9 @@
 /* Appro — Service Worker
-   App-shell caching strategy: precache core assets, cache-first for
-   static resources, network-first fallback to cache for navigation. */
+   App-shell caching: precache the core UI files (never the apk/games
+   folders — those are fetched live and cached on demand instead, so a
+   new file you add shows up immediately without a stale cache). */
 
-const CACHE_NAME = 'appro-cache-v1';
+const CACHE_NAME = 'appro-cache-v2';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -10,10 +11,11 @@ const CORE_ASSETS = [
   './css/styles.css',
   './js/data.js',
   './js/app.js',
+  './js/apk-icon.js',
   './manifest.json',
-  './icons/icon-192.svg',
-  './icons/icon-512.svg',
-  './icons/icon-maskable.svg',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -36,21 +38,24 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
 
-  // Navigation requests: network-first, fallback to cached shell / offline page
+  // Catalog JSON and files in apk/ or games/ should always hit the network
+  // first, so new additions show up without needing a cache-bust.
+  if (/\/(apk|games)\//.test(request.url)) {
+    event.respondWith(
+      fetch(request).catch(() => caches.match(request))
+    );
+    return;
+  }
+
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
-        .then((res) => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          return res;
-        })
+        .then((res) => { const clone = res.clone(); caches.open(CACHE_NAME).then((c) => c.put(request, clone)); return res; })
         .catch(() => caches.match('./index.html').then((r) => r || caches.match('./offline.html')))
     );
     return;
   }
 
-  // Static assets: cache-first, then network, then update cache
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;

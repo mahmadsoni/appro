@@ -126,12 +126,9 @@ p { margin: 0; }
 
 .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; flex-shrink: 0; }
 .brand-mark {
-  width: 34px; height: 34px; border-radius: 10px; position: relative; flex-shrink: 0;
-  background: conic-gradient(from 140deg, var(--cyan), var(--magenta), var(--cyan));
-  display: grid; place-items: center;
-}
-.brand-mark::after {
-  content: ''; width: 14px; height: 14px; border-radius: 4px; background: var(--bg-elevated);
+  width: 34px; height: 34px; flex-shrink: 0;
+  background-image: url('./icons/icon-192.png');
+  background-size: contain; background-repeat: no-repeat; background-position: center;
 }
 .brand-name { display: none; }
 @media (min-width: 640px) { .brand-name { display: inline; } }

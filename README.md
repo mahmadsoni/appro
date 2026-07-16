@@ -1,138 +1,158 @@
 # APPRO
 ### One store. Every pulse of what's next.
 
-Фулли клиент-сайд App Store / Play Store альтернатива — 123 барнома/бозии
-генератсияшуда (аз ҷумла категорияи воқеии **"Лоиҳаҳои Ман"** бо
-барномаву бозиҳои шахсии шумо), theme-и худкор мувофиқи телефон,
-забони худкор мувофиқи минтақа, PWA бо offline support.
+A fully client-side app & game store. No backend, no build step, no fake
+listings. Everything you see comes from real files you drop into two
+folders — icons are read straight out of the real `.apk`, sizes are read
+from the real file, nothing is uploaded separately.
 
 ---
 
-## Чӣ нав дар ин версия
+## How the catalog works now
 
-1. **Theme-и худкор** — тугмаи алоҳидаи dark/light нест. Сайт ҳамеша
-   танзими системаи телефонро пайгирӣ мекунад (`prefers-color-scheme`),
-   ҳатто агар шумо онро дар вақти истифода иваз кунед — сайт зинда
-   (live) тағйир меёбад, бе reload.
-2. **Забони худкор** — тугмаи забон нест. Сайт тавассути timezone
-   (`Asia/Dushanbe`) ва locale-и браузер (`tg`) муайян мекунад, ки
-   корбар аз Тоҷикистон аст ё не. Агар бале — интерфейс пурра тоҷикӣ
-   мешавад; агар не — англисӣ.
-3. **Категорияи "Лоиҳаҳои Ман"** — дар рӯйхати категорияҳои ҳам
-   Apps ва ҳам Games як категорияи махсус илова шуд, ки танҳо
-   лоиҳаҳои воқеии шуморо нишон медиҳад: CoolBoost, ProPlayer FF,
-   SENTIVITI PRO, SITORA, Driftless, DC City, худи Appro, ва
-   OUTBOUND: Open Road Haulers.
-4. **Иконка/лого худкор** — ҳеҷ барнома ё бозӣ ба расм/лого эҳтиёҷ
-   надорад. Ҳар унвон (аз ҷумла лоиҳаҳои воқеии шумо) иконкаи худро
-   аз номи худ гирифта, ба таври худкор gradient + glyph месозад
-   (функсияи `gradientFor()` дар `js/data.js`). Барои иловаи лоиҳаи
-   нав кофист номашро ба рӯйхати `ADMIN_APPS_RAW` / `ADMIN_GAMES_RAW`
-   дар `js/data.js` илова кунед — иконка худ пайдо мешавад.
+There are two folders:
+
+```
+apk/       ← put your .apk files here (regular apps)
+games/     ← put your game files here
+```
+
+Each folder has one `catalog.json` — a plain list telling the site which
+files to show. **Only `file` is required.** Everything else is optional
+and falls back automatically:
+
+```json
+[
+  {
+    "file": "proplayerff.apk",
+    "name": "ProPlayer FF",
+    "category": "gaming-tools",
+    "description": "Free Fire sensitivity, HUD and graphics advisor.",
+    "version": "2.0.1",
+    "releaseDate": "Jun 2026"
+  }
+]
+```
+
+If you skip `name`, it's generated from the filename. If you skip
+`category`, it falls back to the first category in the list. If you skip
+`description`, it shows "No description yet." — nothing breaks.
+
+**The icon is never uploaded.** The site opens the `.apk` itself (an APK
+*is* a zip file), finds the real `ic_launcher.png` inside it, and displays
+that. Same for file size — it's read live from the actual file on disk,
+not typed in by hand. See `js/apk-icon.js` if you're curious how.
+
+Categories available right now (edit `js/data.js` to add more):
+
+- **Apps:** Productivity, Utilities, Gaming Tools, Finance, Social, Media & Streaming, Lifestyle
+- **Games:** Action, Racing, Simulation, Arcade, Open World, Strategy, Puzzle
 
 ---
 
-## Сохтори лоиҳа
+## Adding a new app or game — the whole workflow
+
+**1. Copy the real file into the right folder:**
+```bash
+cp ~/storage/downloads/proplayerff.apk ~/projects/appro/apk/proplayerff.apk
+```
+
+**2. Add one entry to that folder's `catalog.json`.** Open it in any text
+editor (even `nano` in Termux) and add an object to the array:
+```bash
+nano ~/projects/appro/apk/catalog.json
+```
+```json
+[
+  { "file": "proplayerff.apk", "name": "ProPlayer FF", "category": "gaming-tools",
+    "description": "Free Fire settings advisor." }
+]
+```
+
+**3. Push:**
+```bash
+cd ~/projects/appro
+git add .
+git commit -m "Add ProPlayer FF"
+git push
+```
+
+That's it — no more coming back here to regenerate a zip. The site reads
+both `catalog.json` files live on every load.
+
+---
+
+## Project structure
 
 ```
 appro/
-├── index.html            # SPA shell (17 маршрут)
-├── offline.html            # Fallback барои PWA offline
-├── manifest.json             # PWA manifest
-├── sw.js                       # Service worker
-├── README.md                     # Ин файл
+├── index.html
+├── offline.html
+├── manifest.json
+├── sw.js
 ├── css/
-│   └── styles.css                  # Design system
+│   └── styles.css
 ├── js/
-│   ├── data.js                      # Генератори каталог + "Лоиҳаҳои Ман"
-│   └── app.js                        # Router, theme/lang auto, рендер
-└── icons/
-    ├── icon-192.svg
-    ├── icon-512.svg
-    └── icon-maskable.svg
+│   ├── apk-icon.js     # extracts real icons from .apk files (zip parsing)
+│   ├── data.js          # loads apk/catalog.json + games/catalog.json
+│   └── app.js             # router, rendering, search, download
+├── apk/
+│   └── catalog.json       # ← edit this to add apps
+└── games/
+    └── catalog.json       # ← edit this to add games
 ```
 
 ---
 
-## Илова кардани лоиҳаи нави воқеӣ
+## Deploying with Termux (Git → GitHub Pages)
 
-Дар `js/data.js` ду рӯйхал ҳастанд: `ADMIN_APPS_RAW` (барномаҳо) ва
-`ADMIN_GAMES_RAW` (бозиҳо). Барои илова кардани лоиҳаи нав, объекти
-навро ба яке аз ин ду рӯйхат илова кунед:
-
-```js
-{ name: 'Номи Лоиҳа', glyph: '★', sizeMb: 20, version: '1.0.0',
-  releaseDate: 'Jul 2026', description: 'Тавсифи лоиҳа...' }
-```
-
-`glyph` — ягон аломати Unicode (мисли ❄ ⊕ ✦ ▶ ◐ ◆ ◈ ◭ ★ ⚙) — иконка
-ва gradient-и он ба таври худкор аз номи лоиҳа месозанд.
-
----
-
-## Деплой бо Termux (Git → GitHub Pages)
-
-Агар шумо, мисли ҳамеша, аз телефон тавассути Termux кор мекунед,
-марҳилаҳо чунинанд:
-
-**1. Насби асбобҳо (як бор кофист):**
+**1. One-time setup:**
 ```bash
 pkg update -y
-pkg install git openssh -y
+pkg install git -y
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+git config --global credential.helper store
 ```
 
-**2. Танзими identity-и Git (як бор кофист):**
+**2. First push:**
 ```bash
-git config --global user.name "Номи Шумо"
-git config --global user.email "email@example.com"
-```
-
-**3. Даромадан ба папкаи лоиҳа ва оғози репо:**
-```bash
-cd ~/storage/downloads/appro    # ё роҳи дигаре, ки zip-ро баровардаед
+mkdir -p ~/projects
+cp -r ~/storage/downloads/appro ~/projects/appro
+cd ~/projects/appro
 git init
 git add .
-git commit -m "Appro store — initial version"
+git commit -m "Appro store"
 git branch -M main
-```
-
-**4. Пайваст кардан ба GitHub:**
-Аввал дар github.com репозиторийи холӣ созед (масалан `appro`), баъд:
-```bash
-git remote add origin https://github.com/USERNAME/appro.git
+git remote add origin https://github.com/YOUR_USERNAME/appro.git
 git push -u origin main
 ```
-> Агар GitHub парол напурсад, балки token хоҳад — Personal Access
-> Token-ро дар Settings → Developer settings → Personal access tokens
-> созед ва ба ҷои парол истифода баред.
+It will ask for your GitHub username and a Personal Access Token
+(not your password) — generate one at GitHub → Settings → Developer
+settings → Personal access tokens, scope `repo`.
 
-**5. Фаъол кардани GitHub Pages:**
-- Дар репо → **Settings → Pages**
-- Source: **Deploy from a branch**, Branch: **main**, Folder: **/ (root)**
-- Пас аз 1–2 дақиқа сайт дар
-  `https://USERNAME.github.io/appro/` дастрас мешавад.
+**3. Enable GitHub Pages:** repo → Settings → Pages → Source: `main`
+branch, `/ (root)` folder. Live in a minute or two at
+`https://YOUR_USERNAME.github.io/appro/`.
 
-**6. Барои навсозиҳои баъдӣ:**
+**4. Every future update (new app, new game, anything):**
 ```bash
-cd ~/storage/downloads/appro
+cd ~/projects/appro
 git add .
-git commit -m "Тавсифи тағйирот"
+git commit -m "Describe what changed"
 git push
 ```
 
 ---
 
-## Санҷиши маҳаллӣ (пеш аз push)
+## Notes
 
-Агар Python дар Termux насб бошад:
-```bash
-pkg install python -y
-cd appro
-python -m http.server 8080
-```
-Баъд дар браузери телефон: `http://localhost:8080`
-
----
-
-*Ҳамаи унвонҳо, таҳиягарон ва шарҳҳои генератсияшуда (ба ҷуз
-"Лоиҳаҳои Ман") барои мақсадҳои намоишӣ сохта шудаанд.*
+- Icon extraction needs `DecompressionStream`, which every modern mobile
+  browser supports (Chrome, Firefox, Samsung Internet, Safari 16.4+). If
+  it's missing, the app just falls back to a plain gradient icon instead
+  of breaking.
+- Large `.apk`/game files are **not** pre-cached by the service worker —
+  they're fetched fresh and cached on demand, so a new file you add shows
+  up immediately without users needing to clear anything.
+- The UI is English-only for now — Tajik strings can be reintroduced
+  later once the folder-driven workflow is settled.
