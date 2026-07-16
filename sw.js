@@ -3,7 +3,7 @@
    folders — those are fetched live and cached on demand instead, so a
    new file you add shows up immediately without a stale cache). */
 
-const CACHE_NAME = 'appro-cache-v2';
+const CACHE_NAME = 'appro-cache-v3';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -56,6 +56,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // CSS and JS: network-first. These change often during development —
+  // always try to get the latest version, only fall back to cache when
+  // there's genuinely no connection.
+  if (/\.(css|js)$/.test(request.url)) {
+    event.respondWith(
+      fetch(request)
+        .then((res) => { const clone = res.clone(); caches.open(CACHE_NAME).then((c) => c.put(request, clone)); return res; })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Everything else (icons, manifest): cache-first, since these rarely change.
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
