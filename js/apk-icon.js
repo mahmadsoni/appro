@@ -2,14 +2,16 @@
    APK ICON EXTRACTOR
    An .apk file IS a .zip file. This module reads that zip structure
    directly in the browser (no server, no build step) and pulls out the
-   app's real launcher icon PNG — so nobody ever has to upload artwork.
+   app's real launcher icon — so nobody ever has to upload artwork.
 
    How it works:
    1. Fetch the raw .apk bytes.
    2. Find the ZIP "End Of Central Directory" record (scan from the end).
    3. Read the Central Directory to list every file inside the APK.
-   4. Pick the best-looking launcher icon (prefers the highest-density
-      mipmap/drawable folder — xxxhdpi > xxhdpi > xhdpi > hdpi > mdpi).
+   4. Pick the best-looking launcher icon — tries standard ic_launcher.png
+      names across every density folder first (PNG and WebP), then falls
+      back to the largest image found in any mipmap/drawable folder for
+      APKs that use unusual icon naming.
    5. Jump to that file's Local Header, extract its bytes, and decompress
       with the browser's native DecompressionStream if needed.
    6. Return a blob: URL the <img> tag can use directly.
@@ -26,22 +28,33 @@
 
   const ICON_PATTERNS = [
     // Ordered by preference: highest-resolution launcher icon first.
-    /mipmap-xxxhdpi[^/]*\/ic_launcher\.png$/i,
-    /mipmap-xxhdpi[^/]*\/ic_launcher\.png$/i,
-    /mipmap-xhdpi[^/]*\/ic_launcher\.png$/i,
-    /mipmap-hdpi[^/]*\/ic_launcher\.png$/i,
-    /mipmap-mdpi[^/]*\/ic_launcher\.png$/i,
-    /drawable-xxxhdpi[^/]*\/ic_launcher\.png$/i,
-    /drawable-xxhdpi[^/]*\/ic_launcher\.png$/i,
-    /drawable-xhdpi[^/]*\/ic_launcher\.png$/i,
-    /drawable-hdpi[^/]*\/ic_launcher\.png$/i,
-    /drawable[^/]*\/ic_launcher\.png$/i,
-    /ic_launcher\.png$/i,
-    /(app_icon|logo)\.png$/i,
+    /mipmap-xxxhdpi[^/]*\/ic_launcher\.(png|webp)$/i,
+    /mipmap-xxhdpi[^/]*\/ic_launcher\.(png|webp)$/i,
+    /mipmap-xhdpi[^/]*\/ic_launcher\.(png|webp)$/i,
+    /mipmap-hdpi[^/]*\/ic_launcher\.(png|webp)$/i,
+    /mipmap-mdpi[^/]*\/ic_launcher\.(png|webp)$/i,
+    /mipmap-xxxhdpi[^/]*\/ic_launcher_round\.(png|webp)$/i,
+    /mipmap-xxhdpi[^/]*\/ic_launcher_round\.(png|webp)$/i,
+    /mipmap-xhdpi[^/]*\/ic_launcher_round\.(png|webp)$/i,
+    /drawable-xxxhdpi[^/]*\/ic_launcher\.(png|webp)$/i,
+    /drawable-xxhdpi[^/]*\/ic_launcher\.(png|webp)$/i,
+    /drawable-xhdpi[^/]*\/ic_launcher\.(png|webp)$/i,
+    /drawable-hdpi[^/]*\/ic_launcher\.(png|webp)$/i,
+    /drawable[^/]*\/ic_launcher\.(png|webp)$/i,
+    // Broader "launcher" / "app_icon" / "logo" matches, any density folder.
+    /(mipmap|drawable)[^/]*\/ic_launcher[^/]*\.(png|webp)$/i,
+    /(mipmap|drawable)[^/]*\/(app_icon|appicon|logo|icon)\.(png|webp)$/i,
+    /ic_launcher\.(png|webp)$/i,
+    /(app_icon|appicon|logo)\.(png|webp)$/i,
   ];
 
   function readUint16(view, offset) { return view.getUint16(offset, true); }
   function readUint32(view, offset) { return view.getUint32(offset, true); }
+
+  function extOf(name) {
+    const m = name.match(/\.(png|webp)$/i);
+    return m ? m[1].toLowerCase() : 'png';
+  }
 
   function findEndOfCentralDirectory(buf) {
     const view = new DataView(buf);
@@ -111,6 +124,12 @@
       const match = entries.find(e => pattern.test(e.name));
       if (match) return match;
     }
+    // Last resort: the largest image file inside any mipmap/drawable folder —
+    // almost always the launcher icon even with unusual naming.
+    const imageEntries = entries.filter(e => /(mipmap|drawable)[^/]*\/[^/]+\.(png|webp)$/i.test(e.name));
+    if (imageEntries.length) {
+      return imageEntries.reduce((a, b) => (b.uncompressedSize > a.uncompressedSize ? b : a));
+    }
     return null;
   }
 
@@ -133,9 +152,10 @@
         if (!iconEntry) return null;
         const rawBytes = extractFileBytes(buf, iconEntry);
         if (!rawBytes) return null;
-        const pngBytes = await decompress(rawBytes, iconEntry.compressionMethod);
-        if (!pngBytes) return null;
-        const blob = new Blob([pngBytes], { type: 'image/png' });
+        const imgBytes = await decompress(rawBytes, iconEntry.compressionMethod);
+        if (!imgBytes) return null;
+        const mime = extOf(iconEntry.name) === 'webp' ? 'image/webp' : 'image/png';
+        const blob = new Blob([imgBytes], { type: mime });
         return URL.createObjectURL(blob);
       } catch (e) {
         return null;
