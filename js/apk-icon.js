@@ -41,8 +41,16 @@
     /drawable-xhdpi[^/]*\/ic_launcher\.(png|webp)$/i,
     /drawable-hdpi[^/]*\/ic_launcher\.(png|webp)$/i,
     /drawable[^/]*\/ic_launcher\.(png|webp)$/i,
-    // Broader "launcher" / "app_icon" / "logo" matches, any density folder.
-    /(mipmap|drawable)[^/]*\/ic_launcher[^/]*\.(png|webp)$/i,
+    // Adaptive-icon foreground layer — the actual artwork (background layer
+    // is usually just a flat color and gets explicitly avoided below).
+    /mipmap-xxxhdpi[^/]*\/ic_launcher_foreground\.(png|webp)$/i,
+    /mipmap-xxhdpi[^/]*\/ic_launcher_foreground\.(png|webp)$/i,
+    /mipmap-xhdpi[^/]*\/ic_launcher_foreground\.(png|webp)$/i,
+    /drawable[^/]*\/ic_launcher_foreground\.(png|webp)$/i,
+    /ic_launcher_foreground\.(png|webp)$/i,
+    // Broader "launcher" / "app_icon" / "logo" matches, any density folder
+    // (still avoids "_background" — that's a flat color layer, not artwork).
+    /(mipmap|drawable)[^/]*\/ic_launcher(?!_background)[^/]*\.(png|webp)$/i,
     /(mipmap|drawable)[^/]*\/(app_icon|appicon|logo|icon)\.(png|webp)$/i,
     /ic_launcher\.(png|webp)$/i,
     /(app_icon|appicon|logo)\.(png|webp)$/i,
@@ -124,9 +132,12 @@
       const match = entries.find(e => pattern.test(e.name));
       if (match) return match;
     }
-    // Last resort: the largest image file inside any mipmap/drawable folder —
-    // almost always the launcher icon even with unusual naming.
-    const imageEntries = entries.filter(e => /(mipmap|drawable)[^/]*\/[^/]+\.(png|webp)$/i.test(e.name));
+    // Last resort: the largest image file inside any mipmap/drawable folder,
+    // skipping obvious "_background" flat-color layers — almost always the
+    // real icon artwork even with unusual naming.
+    const imageEntries = entries.filter(e =>
+      /(mipmap|drawable)[^/]*\/[^/]+\.(png|webp)$/i.test(e.name) && !/background/i.test(e.name)
+    );
     if (imageEntries.length) {
       return imageEntries.reduce((a, b) => (b.uncompressedSize > a.uncompressedSize ? b : a));
     }

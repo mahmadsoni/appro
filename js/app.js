@@ -84,8 +84,19 @@
       if (!item || !item.isApk || !window.APK_TOOLS) return;
       const url = await window.APK_TOOLS.extract(item.file);
       if (url) {
-        el.style.background = '#000';
-        el.innerHTML = `<img src="${url}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" />`;
+        // Keep the existing gradient behind the image — adaptive-icon
+        // foreground layers are often partly transparent, and the gradient
+        // showing through looks far better than a flat black square.
+        const glyph = el.querySelector('.glyph');
+        if (glyph) glyph.remove();
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = '';
+        img.loading = 'lazy';
+        img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:6%;box-sizing:border-box;';
+        img.onerror = () => img.remove(); // fall back to the gradient+glyph silently
+        el.style.position = 'relative';
+        el.appendChild(img);
       }
     });
   }
